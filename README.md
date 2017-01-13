@@ -5,7 +5,7 @@ First either clone this repository with the command `git clone https://github.co
 Next, you're going to need to get CMake to build the project. It can be found [here](https://cmake.org/download/). 
 You can download the msi to install it, or the zip if you want a portable version.
 
-Now your also going to need to grab the SFML binaries [here](http://www.sfml-dev.org/download/sfml/2.4.1/).
+Now you're also going to need to grab the SFML binaries [here](http://www.sfml-dev.org/download/sfml/2.4.1/).
 You need to download the file for your version of Visual Studio, make sure that it is also the 64 bit version.
 Unzip that wherever you want. I'll put it on my desktop.
 
