@@ -10,18 +10,14 @@ const int WINDOW_SIZE_X = 800;
 const int WINDOW_SIZE_Y = 800;
 
 int data_point_count(std::string);
-std::vector<std::vector<float>> read_data(std::string, int);
-sf::VertexArray draw_line_graph(std::vector<std::vector<float>>);
+std::vector<std::vector<float>> read_data(std::string);
+void draw_line_graph(std::vector<std::vector<float>>, sf::RenderWindow *window);
 
 int main() {
 
-	//std::cout << data_point_count("../data/car_mpg.txt") << std::endl;
-
 	sf::RenderWindow window(sf::VideoMode(WINDOW_SIZE_X, WINDOW_SIZE_Y), "cs445");
 
-	std::vector<std::vector<float>> data = read_data("../data/car_mpg.txt", 8);
-
-	sf::VertexArray graph_1 = draw_line_graph(data);
+	std::vector<std::vector<float>> data = read_data("../data/car_mpg.txt");
 
 	while (window.isOpen()) {
 
@@ -31,24 +27,18 @@ int main() {
 			if (event.type == sf::Event::Closed) {
 				window.close();
 			}
-
 		}
 
-
 		window.clear(sf::Color(255, 255, 255));
+		
+		draw_line_graph(data, &window);
 
-		window.draw(graph_1);
 
 		window.display();
 
 	}
 
-
-
-
 	return 1;
-
-
 }
 
 sf::Vector2f get_largest_smallest_data_points(std::vector<std::vector<float>> data){
@@ -71,74 +61,74 @@ sf::Vector2f get_largest_smallest_data_points(std::vector<std::vector<float>> da
 	return sf::Vector2f(smallest, largest);
 }
 
-sf::VertexArray draw_line_graph(std::vector<std::vector<float>> d) {
+void draw_line_graph(std::vector<std::vector<float>> d, sf::RenderWindow *window) {
 	
 	sf::Vector2f bounds = get_largest_smallest_data_points(d);
 
 	sf::VertexArray v;
 
-	v.setPrimitiveType(sf::Points);
+	v.setPrimitiveType(sf::LinesStrip);
 	
 
 	int step = WINDOW_SIZE_X / d.at(0).size();
 
-	for (int x = 0; x < d.at(0).size(); x++) {
+	for (int x = 0; x < d.size(); x++) {
 
 		int x_pos = 0;
-		sf::Color c(rand()%255, rand()%255, rand()%255);
+		//sf::Color c(rand()%255, rand()%255, rand()%255);
 
-		for (int y = 0; y < d.size(); y++) {
+		for (int y = 0; y < d.at(x).size(); y++) {
 
-			sf::Vertex v1(sf::Vector2f(x_pos, WINDOW_SIZE_Y - d.at(y).at(x) * (WINDOW_SIZE_Y / bounds.y )));
+			sf::Vertex v1(sf::Vector2f(x_pos, WINDOW_SIZE_Y - d.at(x).at(y) * (WINDOW_SIZE_Y / bounds.y )));
 			//sf::Vertex v2(sf::Vector2f(x_pos, WINDOW_SIZE_Y - d.at(y).at(x) * (WINDOW_SIZE_Y / bounds.y )));
-			v1.color = c;
+			v1.color = sf::Color::Blue;
 			//v2.color = c;
 			v.append(v1);
 
 			x_pos += step;
 		}
-	}
 
-	return v;
+		window->draw(v);
+		v.clear();
+	}
 
 }
 
 
-std::vector<std::vector<float>> read_data(std::string file_path, int point_count) {
+std::vector<std::vector<float>> read_data(std::string file_path) {
 	
 	std::vector<std::vector<float>> data;
-
-	for (int i = 0; i < point_count; i++) {
-		data.push_back(std::vector<float>());
-	}
 
 	std::ifstream stream;
 	stream.open(file_path);
 
+	if (!stream){
+		return data;
+	}
+
 	std::string line;
-	int line_number = 0;
 
 	while (std::getline(stream, line)) {
 
-		std::regex reg("\\s+");
+		std::regex reg("\\s+|\"(.*?)\"|\\,");
 		std::regex_token_iterator<std::string::iterator> iterator(line.begin(), line.end(), reg, -1);
 		std::regex_token_iterator<std::string::iterator> end;
 
-		int data_point = 0;
+		std::vector<float> entry;
+
 		while (iterator != end) {
 			
 			try {
-				data.at(data_point).push_back(std::stof(*iterator));
+				entry.push_back(std::stof(*iterator));
 			} catch (std::invalid_argument){
-				data.at(data_point).push_back(0.0f);
+				entry.push_back(0.0f);
 			}
 			
 			iterator++;
-			data_point++;
 		}
 
-		line_number++;
-			
+
+		data.push_back(entry);
 	}
 
 	return data;

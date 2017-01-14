@@ -1,6 +1,0 @@
-6. Number of Attributes: 5
-     1. Number of O-rings at risk on a given flight
-     2. Number experiencing thermal distress
-     3. Launch temperature (degrees F)
-     4. Leak-check pressure (psi)
-     5. Temporal order of flight
