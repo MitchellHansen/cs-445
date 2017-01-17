@@ -1,0 +1,11 @@
+Statements
+1.) There are multiple ways to display data in graphs
+2.) These data sets can consist of multiple dimensions
+3.) You can add interpretation to the data such as trend lines
+4.) Stacked graphs are a good way to show accumulating data
+5.) Line graphs for multidimensional data
+
+Questions
+1.) How do you represent data with > 10 dimensions?
+2.) How do you avoid cluttering of the graph
+3.) What is the correct way to pull X amount of data points from an N point set
