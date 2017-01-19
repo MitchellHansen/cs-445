@@ -13,7 +13,12 @@ int data_point_count(std::string);
 std::vector<std::vector<float>> read_data(std::string);
 std::vector<sf::VertexArray> draw_line_graph(std::vector<std::vector<float>>);
 sf::Vector2f get_largest_smallest_data_points(std::vector<std::vector<float>> data);
+sf::Vector2f get_largest_smallest_data_points_at_index(std::vector<std::vector<float>> data, int index);
 void draw_graph_background(int segment_count, sf::RenderWindow *window);
+void normalize_data(std::vector<std::vector<float>> *data);
+float scale_between(float input, float upper_scale, float lower_scale, float upper_bound, float lower_bound) {
+	return (upper_scale - lower_scale) * (input - lower_bound) / (upper_bound - lower_bound) + lower_scale;
+}
 
 int main() {
 
@@ -21,7 +26,9 @@ int main() {
 
 
 	// This is where the data is read, change the path for another file
-	std::vector<std::vector<float>> data = read_data("../data/car_mpg.txt");
+	std::vector<std::vector<float>> data = read_data("../data/sts.txt");
+	normalize_data(&data);
+	std::vector<sf::Color> sort_and_assign_colors;
 
 	sf::Font f;
 	f.loadFromFile("../assets/code_bold.otf");
@@ -69,6 +76,24 @@ int main() {
 	return 1;
 }
 
+void normalize_data(std::vector<std::vector<float>> *data) {
+
+	for (int dimension = 0; dimension < data->at(0).size(); dimension++) {
+
+		sf::Vector2f bounds = get_largest_smallest_data_points_at_index(*data, dimension);
+
+		for (int individual = 0; individual < data->size(); individual++) {
+
+			data->at(individual).at(dimension) = scale_between(data->at(individual).at(dimension), 1, 0, bounds.x, bounds.y);
+
+		}
+	}
+
+
+
+
+}
+
 sf::Vector2f get_largest_smallest_data_points(std::vector<std::vector<float>> data){
 
 	float smallest = FLT_MAX;
@@ -88,6 +113,24 @@ sf::Vector2f get_largest_smallest_data_points(std::vector<std::vector<float>> da
 	return sf::Vector2f(smallest, largest);
 }
 
+sf::Vector2f get_largest_smallest_data_points_at_index(std::vector<std::vector<float>> data, int index) {
+
+	float smallest = FLT_MAX;
+	float largest = 0;
+
+	
+	for (int y = 0; y < data.size(); y++) {
+
+		if (data.at(y).at(index) < smallest)
+			smallest = data.at(y).at(index);
+
+		if (data.at(y).at(index) > largest)
+			largest = data.at(y).at(index);
+
+	}
+
+	return sf::Vector2f(smallest, largest);
+}
 
 void draw_graph_background(int segment_count, sf::RenderWindow *window) {
 	
@@ -106,9 +149,6 @@ void draw_graph_background(int segment_count, sf::RenderWindow *window) {
 		pos += step;
 	}
 	
-
-
-
 }
 
 // This function takes the 2d array of data and returns multiple vertex arrays to draw
@@ -134,7 +174,7 @@ std::vector<sf::VertexArray> draw_line_graph(std::vector<std::vector<float>> d) 
 
 		for (int y = 0; y < d.at(x).size(); y++) {
 
-			sf::Vertex v1(sf::Vector2f(x_pos, WINDOW_SIZE_Y - d.at(x).at(y) * (WINDOW_SIZE_Y / bounds.y )));
+			sf::Vertex v1(sf::Vector2f(x_pos, WINDOW_SIZE_Y - d.at(x).at(y) * (WINDOW_SIZE_Y / bounds.y ) / 2 - WINDOW_SIZE_Y/4));
 			v1.color = color;
 
 			v.append(v1);
