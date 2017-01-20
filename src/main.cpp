@@ -12,6 +12,7 @@ const int WINDOW_SIZE_Y = 800;
 int data_point_count(std::string);
 std::vector<std::vector<float>> read_data(std::string);
 std::vector<sf::VertexArray> draw_line_graph(std::vector<std::vector<float>>);
+std::vector<sf::VertexArray> draw_scaled_graph(std::vector<std::vector<float>>);
 sf::Vector2f get_largest_smallest_data_points(std::vector<std::vector<float>> data);
 sf::Vector2f get_largest_smallest_data_points_at_index(std::vector<std::vector<float>> data, int index);
 void draw_graph_background(int segment_count, sf::RenderWindow *window);
@@ -26,9 +27,8 @@ int main() {
 
 
 	// This is where the data is read, change the path for another file
-	std::vector<std::vector<float>> data = read_data("../data/sts.txt");
+	std::vector<std::vector<float>> data = read_data("../data/car_mpg.txt");
 	normalize_data(&data);
-	std::vector<sf::Color> sort_and_assign_colors;
 
 	sf::Font f;
 	f.loadFromFile("../assets/code_bold.otf");
@@ -49,6 +49,9 @@ int main() {
 
 
 	std::vector<sf::VertexArray> lines = draw_line_graph(data);
+	std::vector<sf::VertexArray> lines2 = draw_scaled_graph(data);
+
+	bool graph_type = false;
 
 	while (window.isOpen()) {
 
@@ -58,14 +61,29 @@ int main() {
 			if (event.type == sf::Event::Closed) {
 				window.close();
 			}
+			if (event.type == sf::Event::KeyPressed){
+				if (event.key.code == sf::Keyboard::Space){
+					if (graph_type)
+						graph_type = false;
+					else
+						graph_type = true;
+				}
+			}
 		}
 
 		window.clear(sf::Color(255, 255, 255));
 		
 		draw_graph_background(data.at(0).size(), &window);
 
-		for (auto i : lines)
-			window.draw(i);
+		if (graph_type){
+			for (auto i : lines2)
+				window.draw(i);
+		}
+		else{
+			for (auto i : lines)
+				window.draw(i);
+
+		}
 
 		window.draw(y_max_text);
 		window.draw(x_max_text);
@@ -75,6 +93,55 @@ int main() {
 
 	return 1;
 }
+
+
+std::vector<sf::VertexArray> draw_scaled_graph(std::vector<std::vector<float>> data) {
+
+	// Sort the vector by the first element
+	std::sort(data.begin(), data.end(), [](const std::vector< float >& a, const std::vector< float >& b){ return a[0] > b[0]; } );
+
+	int red_index = data.size() / 2;
+	std::vector<float> red_index_y = data.at(red_index);
+
+	// Get the datas highest and lowest values to scale with
+	// Set the line to a random
+	sf::Vector2f bounds = get_largest_smallest_data_points(data);
+
+	// The x increment that we step by
+	int step = WINDOW_SIZE_X / data.at(0).size();
+
+	std::vector<sf::VertexArray> vertex_array_array;
+
+	for (int x = 0; x < data.size(); x++) {
+
+		int x_pos = 0;
+
+		sf::VertexArray v;
+		v.setPrimitiveType(sf::LinesStrip);
+
+		for (int y = 0; y < data.at(x).size(); y++) {
+
+			float y_pos = (data.at(x).at(y) + (red_index_y.at(0) - red_index_y.at(y))) * ((WINDOW_SIZE_Y / bounds.y ) / 2) + WINDOW_SIZE_Y/4;
+			sf::Vertex v1(sf::Vector2f(x_pos, y_pos));
+
+			if (x == red_index)
+				v1.color = sf::Color(0, 0, 0);
+			else
+				v1.color = sf::Color(0, 255, 0);
+
+			v.append(v1);
+
+			x_pos += step;
+		}
+
+		vertex_array_array.push_back(v);
+	}
+
+	return vertex_array_array;
+
+}
+
+
 
 void normalize_data(std::vector<std::vector<float>> *data) {
 
@@ -88,10 +155,6 @@ void normalize_data(std::vector<std::vector<float>> *data) {
 
 		}
 	}
-
-
-
-
 }
 
 sf::Vector2f get_largest_smallest_data_points(std::vector<std::vector<float>> data){
