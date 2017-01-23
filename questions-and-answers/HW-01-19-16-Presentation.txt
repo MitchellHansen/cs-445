@@ -1,0 +1,15 @@
+
+Observations
+
+1.) View tasks abstractly to clearly communicate the data
+2.) Designers should create tools that the user uses to abstract the data
+3.) This method is used to try and discover new ideas from data that has been abstracted
+4.) Multiple end goals for data abstraction. Science, knowledge, or for enjoyment to see data visualized
+5.) Can be used for searching complex data sets, allows passive browsing of the data for interesting data points
+
+
+Questions
+
+1.) I still don't know why it's called task abstraction exactly
+2.) 
+3.) 

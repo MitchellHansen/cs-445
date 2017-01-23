@@ -1,0 +1,16 @@
+
+statements
+
+1.) Reducing the amount of data points increases clarity
+2.) higher dimensional data can be reduced to glean more information from it
+3.) It is easy to fall into confirmation bias with your data, avoid it
+4.) ML can reduce these issues
+5.) These reductions are often lossy 
+
+questions
+
+1.) How exactly did that 16-d star graph go to 8 points? 
+	They seemed to all overlap
+2.) How is ML trained on the data
+3.) Any more ways to avoid the streetlight effect?
+
