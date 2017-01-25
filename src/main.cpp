@@ -5,6 +5,8 @@
 #include <exception>
 #include <math.h>
 #include <float.h>
+#include <list>
+#include "util.hpp"
 
 const int WINDOW_SIZE_X = 800;
 const int WINDOW_SIZE_Y = 800;
@@ -20,6 +22,8 @@ void normalize_data(std::vector<std::vector<float>> *data);
 float scale_between(float input, float upper_scale, float lower_scale, float upper_bound, float lower_bound) {
 	return (upper_scale - lower_scale) * (input - lower_bound) / (upper_bound - lower_bound) + lower_scale;
 }
+
+
 
 int main() {
 
@@ -51,6 +55,8 @@ int main() {
 	std::vector<sf::VertexArray> lines = draw_line_graph(data);
 	std::vector<sf::VertexArray> lines2 = draw_scaled_graph(data);
 
+    data_line l(1, 50, sf::Vector2f(30, 30), sf::Vector2f(120, 120));
+
 	bool graph_type = false;
 
 	while (window.isOpen()) {
@@ -73,19 +79,24 @@ int main() {
 
 		window.clear(sf::Color(255, 255, 255));
 		
-		draw_graph_background(data.at(0).size(), &window);
+		//draw_graph_background(data.at(0).size(), &window);
 
-		if (graph_type){
-			for (auto i : lines2)
-				window.draw(i);
-		}
-		else{
-			for (auto i : lines)
-				window.draw(i);
+//		if (graph_type){
+//			for (auto i : lines2)
+//				window.draw(i);
+//		}
+//		else{
+//			for (auto i : lines)
+//				window.draw(i);
+//
+//		}
 
-		}
+       // l.draw_line(&window);
 
-		window.draw(y_max_text);
+
+
+
+        window.draw(y_max_text);
 		window.draw(x_max_text);
 		window.display();
 
