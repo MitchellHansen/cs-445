@@ -1,0 +1,16 @@
+Observations:
+
+1.) When you have a module n != 0 just repeat the last coord 
+2.) Arrows implicitly describe the sequence
+3.) Labeling lets you restore the data from the actual visual
+4.) For bezier curves, the Y level is determined essentially arbitrarily
+5.) Can be mirrored on the Y axis to compare two data sets
+
+Questions:
+
+1.) Are there other ways to use the Y axis for this data?
+2.) Does repeating the last coordinate skew data?
+3.) The bezier graph, having arrows would be ambiguous, 
+	they would all point down?
+4.) Collocated coordinates are a lossless format to display data
+5.) 

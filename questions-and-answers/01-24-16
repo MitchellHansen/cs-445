@@ -2,8 +2,8 @@
 Observations:
 
 
-1.) GLC generalized parralell and radial coords
-2.) Radial and parallel are equivilent when radial is not closed
+1.) GLC generalized parallel and radial coords
+2.) Radial and parallel are equivalent when radial is not closed
 3.) Multidimensional data is often viewed via a lossy representation
 4.) You can also split into 3d coords from the data
 5.) The curve GLC's can be concave or convex
@@ -12,7 +12,7 @@ Questions:
 
 
 1.) Any benefit / use cases of closing and not closing radial coords?
-2.) What about abitrary splitting of n dimensions? 
+2.) What about arbitrary splitting of n dimensions? 
 3.) How is the 2nd point determined on the bezier curve?
 4.) 
 5.)
