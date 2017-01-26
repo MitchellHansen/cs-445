@@ -55,7 +55,7 @@ int main() {
 	std::vector<sf::VertexArray> lines = draw_line_graph(data);
 	std::vector<sf::VertexArray> lines2 = draw_scaled_graph(data);
 
-    data_line l(1, 50, sf::Vector2f(30, 30), sf::Vector2f(120, 120));
+    data_line l(sf::Vector2f(30, 30), sf::Vector2f(120, 120));
 
 	bool graph_type = false;
 
@@ -91,7 +91,7 @@ int main() {
 //
 //		}
 
-       // l.draw_line(&window);
+       l.draw_line(&window);
 
 
 

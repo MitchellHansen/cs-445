@@ -18,8 +18,8 @@ sf::Vector2f Normalized(sf::Vector2f v) {
 
 class sfLine : public sf::Drawable {
 public:
-    sfLine(const sf::Vector2f &point1, const sf::Vector2f &point2) :
-            color(sf::Color::Yellow), thickness(5.f) {
+    sfLine(const sf::Vector2f &point1, const sf::Vector2f &point2, float thickness, sf::Color color) :
+            color(color), thickness(thickness) {
         sf::Vector2f direction = point2 - point1;
         sf::Vector2f unitDirection = direction / std::sqrt(direction.x * direction.x + direction.y * direction.y);
         sf::Vector2f unitPerpendicular(-unitDirection.y, unitDirection.x);
@@ -46,19 +46,17 @@ private:
 
 struct data_line {
 
-    data_line(int index, int step, sf::Vector2f head, sf::Vector2f tail):
-            index(index), step(step), head(head), tail(tail) {
+    data_line(sf::Vector2f head, sf::Vector2f tail):
+            head(head), tail(tail) {
 
     }
 
-    int index = 0;
-    int step = 0;
     sf::Vector2f head;
     sf::Vector2f tail;
 
     void draw_line(sf::RenderWindow *window){
 
-        sfLine l(head, tail);
+        sfLine l(head, tail, 2.0f ,sf::Color::Blue);
         window->draw(l);
     }
 
