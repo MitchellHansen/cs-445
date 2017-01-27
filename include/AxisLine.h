@@ -21,7 +21,7 @@ public:
 	}
 
 	sf::Vector2f get_point(float normalized_point) {
-		return (head - tail) / normalized_point;
+		return ((head - tail) * normalized_point) + tail;
 	}
 
 private:

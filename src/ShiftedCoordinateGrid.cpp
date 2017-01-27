@@ -1,9 +1,8 @@
-#pragma once
 #include <SFML/Graphics.hpp>
 #include "ShiftedCoordinateGrid.h"
 #include "DataLine.h"
 
-ShiftedCoordinateGrid::ShiftedCoordinateGrid(sf::Vector2f origin) : origin(origin) {
+ShiftedCoordinateGrid::ShiftedCoordinateGrid(sf::Vector2f origin, int index) : index(index), origin(origin), initial_origin(origin) {
 	f.loadFromFile("../assets/code_bold.otf");
 	x1x2_text.setFont(f);
 	x1x2_text.setString("");
@@ -11,6 +10,11 @@ ShiftedCoordinateGrid::ShiftedCoordinateGrid(sf::Vector2f origin) : origin(origi
 	x1x2_text.setColor(sf::Color::Black);
 
 };
+
+void ShiftedCoordinateGrid::reset() {
+    origin = initial_origin;
+    origin_shift = sf::Vector2f(0, 0);
+}
 
 void ShiftedCoordinateGrid::flip_bit() {
 	flipped = !flipped;
@@ -40,20 +44,28 @@ void ShiftedCoordinateGrid::shift_coordinate(sf::Vector2f shift) {
 	this->origin_shift = shift * SCALE_VALUE;
 }
 
+void ShiftedCoordinateGrid::set_position(sf::Vector2f position) {
+    origin = position;
+}
+
 void ShiftedCoordinateGrid::shift_coordinate_pixel_space(sf::Vector2f shift) {
 	this->origin_shift = shift;
 }
 
+// Index 1 = this points coordinate
+// index 2 = the point to move to
 void ShiftedCoordinateGrid::collapse_to_point(ShiftedCoordinateGrid neighbor_grid, DataLine line, int index1, int index2) {
 
 	// Move the grid to the neighbors grid
 	origin = neighbor_grid.get_origin();
-	
+	origin_shift = neighbor_grid.get_shift();
+
+
 	std::vector<sf::Vector2f> coords = line.doubled_coords();
 	sf::Vector2f this_coord = coords.at(index1);
 	sf::Vector2f next_coord = coords.at(index2);
 	
-	sf::Vector2f difference = next_coord - this_coord;
+	sf::Vector2f difference = (next_coord - this_coord) * SCALE_VALUE;
 	
 	origin_shift += difference;
 	
@@ -81,7 +93,7 @@ void ShiftedCoordinateGrid::draw(sf::RenderWindow *window) {
 
 }
 
-void ShiftedCoordinateGrid::draw_text(sf::RenderWindow *window, int index) {
+void ShiftedCoordinateGrid::draw_text(sf::RenderWindow *window) {
 
 	x1x2_text.setFont(f);
 

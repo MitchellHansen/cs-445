@@ -1,5 +1,5 @@
-#pragma once
 #include <SFML/Graphics.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <iostream>
 #include <fstream>
 #include <regex>
@@ -25,6 +25,7 @@ float scale_between(float input, float upper_scale, float lower_scale, float upp
 	return (upper_scale - lower_scale) * (input - lower_bound) / (upper_bound - lower_bound) + lower_scale;
 }
 
+enum Mouse_State { PRESSED, DEPRESSED };
 
 int main() {
 
@@ -38,17 +39,20 @@ int main() {
 
 	sf::Text y_max_text;
 	y_max_text.setFont(f);
-	y_max_text.setString("string");
-	y_max_text.setCharacterSize(14);
-	y_max_text.setColor(sf::Color::Black);
+	y_max_text.setString("Visual Analytics\nMitchell Hansen\nFrank Senseney\nMatthew Stalder");
+	y_max_text.setCharacterSize(12);
+	y_max_text.setFillColor(sf::Color::Black);
 	y_max_text.setPosition(sf::Vector2f(10, 10));
 	
 	
-	
-	
 	// This is where the data is read, change the path for another file
-	std::vector<std::vector<float>> raw_data = read_data("../data/doubled_data.txt");
-	//normalize_data(&raw_data);
+	std::vector<std::vector<float>> raw_data = read_data("../data/default_data.txt");
+
+
+    // Uncomment the normalize_data line when using actual data!!! The data on the HW2 pdf was already normalized and in default_data.txt
+    // So normalizing it again screws stuff up
+
+    //normalize_data(&raw_data);
 
 
 	std::vector<DataLine> data_lines;
@@ -72,21 +76,24 @@ int main() {
 	for (int i = 0; i < raw_data.at(0).size() / 2; i++) {
 		//                       + a lil padding
 		int x_pos = step * i * 2 + step / 2;
-		coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 400)));
+		coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 400), i));
 	}
 
-	
-	
+    // Initialize the paired coordinates
+    std::vector<AxisLine> axis_lines;
+    for (int i = 0; i < raw_data.at(0).size(); i++) {
 
-	enum Mouse_State { PRESSED, DEPRESSED };
+        int x_pos = step * i + step / 2;
+        axis_lines.push_back(AxisLine(sf::Vector2f(x_pos, 600), sf::Vector2f(x_pos, 200)));
+    }
+
+    int graph_type = 0;
+
 	Mouse_State mouse_state = Mouse_State::DEPRESSED;
 
 	sf::Vector2i last_mouse_position = sf::Mouse::getPosition();
 
 	int zoom_level = 50;
-
-	enum Graph_Type { A, B, C, D, E, F, G, H };
-	Graph_Type graph_type = A;
 	
 	while (window.isOpen()) {
 
@@ -113,21 +120,36 @@ int main() {
 					coordinates.at(0).collapse_to_point(coordinates.at(1), data_lines.at(1), 0, 1);
 				}
 				if (event.key.code == sf::Keyboard::F) {
-
+                    coordinates.at(2).collapse_to_point(coordinates.at(1), data_lines.at(1), 2, 1);
 				}
 				if (event.key.code == sf::Keyboard::G) {
+                    sf::Vector2f p1 = coordinates.at(0).get_origin();
+                    sf::Vector2f p2 = coordinates.at(1).get_origin();
 
+                    coordinates.at(0).set_position(p2);
+                    coordinates.at(1).set_position(p1);
+
+                    ShiftedCoordinateGrid g1 = coordinates.at(0);
+                    ShiftedCoordinateGrid g2 = coordinates.at(1);
+
+                    coordinates.at(0) = g2;
+                    coordinates.at(1) = g1;
 				}
 				if (event.key.code == sf::Keyboard::H) {
-
+                    if (graph_type == 0)
+                        graph_type = 1;
+                    else
+                        graph_type = 0;
 				}
 				if (event.key.code == sf::Keyboard::R) {
-
+                    for (auto &i: coordinates)
+                        i.reset();
 				}
 			}
 
 			if (event.type == sf::Event::MouseButtonPressed) {
 				mouse_state = Mouse_State::PRESSED;
+				
 				last_mouse_position = sf::Mouse::getPosition();
 			}
 
@@ -164,14 +186,23 @@ int main() {
 
 		window.clear(sf::Color(255, 255, 255));
 
-		for (int i = 0; i < coordinates.size(); i++) {
-			coordinates.at(i).draw(&window);
-			coordinates.at(i).draw_text(&window, i*2);
-		}
 
-		for (auto i : data_lines)
-			i.draw(coordinates, &window);
 
+        if (graph_type == 1) {
+            for (auto i: axis_lines)
+                i.draw_line(&window);
+            for (auto i: data_lines)
+                i.draw(axis_lines, &window);
+        }
+        else if (graph_type == 0) {
+            for (int i = 0; i < coordinates.size(); i++) {
+                coordinates.at(i).draw(&window);
+                coordinates.at(i).draw_text(&window);
+            }
+            for (auto i : data_lines) {
+                i.draw(coordinates, &window);
+            }
+        }
 		window.draw(y_max_text);
 		
 		window.display();
@@ -362,7 +393,7 @@ std::vector<std::vector<float>> read_data(std::string file_path) {
 
 	while (std::getline(stream, line)) {
 
-		std::regex reg("\,\\s*");
+		std::regex reg("\\,\\s*");
 		std::regex_token_iterator<std::string::iterator> iterator(line.begin(), line.end(), reg, -1);
 		std::regex_token_iterator<std::string::iterator> end;
 
