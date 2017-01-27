@@ -16,7 +16,7 @@ void ShiftedCoordinateGrid::flip_bit() {
 	flipped = !flipped;
 }
 
-// Take normalized line point and return shifted point
+// Take normalized line point and return shifted point in pixel space
 sf::Vector2f ShiftedCoordinateGrid::shift_point(sf::Vector2f point) {
 
 	// Convert the normalized coords to pixels
@@ -36,6 +36,19 @@ sf::Vector2f ShiftedCoordinateGrid::shift_point(sf::Vector2f point) {
 		return point + origin + origin_shift;
 }
 
+// Take normalized line point and return shifted point in normal space
+sf::Vector2f ShiftedCoordinateGrid::shift_point_in_normalized_space(sf::Vector2f point) {
+
+
+	// If the point was flipped to do that cross shit
+	if (flipped) {
+		point.y = 1 - point.y;
+		return (point);
+	}
+	else
+		return point;
+}
+
 void ShiftedCoordinateGrid::shift_coordinate(sf::Vector2f shift) {
 	this->origin_shift = shift * SCALE_VALUE;
 }
@@ -49,9 +62,13 @@ void ShiftedCoordinateGrid::collapse_to_point(ShiftedCoordinateGrid neighbor_gri
 	// Move the grid to the neighbors grid
 	origin = neighbor_grid.get_origin();
 	
-	std::vector<sf::Vector2f> coords = line.doubled_coords();
-	sf::Vector2f this_coord = coords.at(index1);
-	sf::Vector2f next_coord = coords.at(index2);
+	sf::Vector2f line_shift = neighbor_grid.get_shift();
+	
+	std::vector<sf::Vector2f> coords = line.get_doubled_coords();
+	std::vector<sf::Vector2f> shifts = line.get_doubled_shifts();
+
+	sf::Vector2f this_coord = neighbor_grid.shift_point(coords.at(index1));
+	sf::Vector2f next_coord = neighbor_grid.shift_point(coords.at(index2));
 	
 	sf::Vector2f difference = next_coord - this_coord;
 	

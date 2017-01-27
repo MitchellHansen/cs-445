@@ -51,6 +51,16 @@ int main() {
 	//normalize_data(&raw_data);
 
 
+	// Initialize the paired coordinates
+	std::vector<ShiftedCoordinateGrid> coordinates;
+
+	int step = WINDOW_SIZE_X / raw_data.at(0).size();
+	for (int i = 0; i < raw_data.at(0).size() / 2; i++) {
+		//                       + a lil padding
+		int x_pos = step * i * 2 + step / 2;
+		coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 400)));
+	}
+
 	std::vector<DataLine> data_lines;
 
 	// Initialize the container for the lines of data
@@ -61,18 +71,7 @@ int main() {
 		int data_class = raw_line_data.back();
 		raw_line_data.pop_back();
 
-		data_lines.push_back(DataLine(raw_line_data, data_class));
-	}
-
-
-	// Initialize the paired coordinates
-	std::vector<ShiftedCoordinateGrid> coordinates;
-
-	int step = WINDOW_SIZE_X / raw_data.at(0).size();
-	for (int i = 0; i < raw_data.at(0).size() / 2; i++) {
-		//                       + a lil padding
-		int x_pos = step * i * 2 + step / 2;
-		coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 400)));
+		data_lines.push_back(DataLine(raw_line_data, data_class, &coordinates));
 	}
 
 	

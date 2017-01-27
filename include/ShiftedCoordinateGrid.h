@@ -12,6 +12,8 @@ public:
 	// Receive a point in [0-1] coords
 	sf::Vector2f shift_point(sf::Vector2f point);
 
+	sf::Vector2f shift_point_in_normalized_space(sf::Vector2f point);
+
 	// Give the coordinate grid a [0-1] normalized coord to shift to 
 	// Used for straightening lines, where you are calculating line heights in normalized coords
 	void shift_coordinate(sf::Vector2f shift);

@@ -5,8 +5,10 @@
 #include <iostream>
 #include "ShiftedCoordinateGrid.h"
 
-DataLine::DataLine(std::vector<float> normalized_data, int data_class) :
-	data(normalized_data), data_class(data_class) {
+
+
+DataLine::DataLine(std::vector<float> normalized_data, int data_class, std::vector<ShiftedCoordinateGrid> *coordinate_grids) :
+	data(normalized_data), data_class(data_class), coordinate_grids(coordinate_grids) {
 
 	if (data_class == 1)
 		color = sf::Color::Blue;
@@ -16,23 +18,26 @@ DataLine::DataLine(std::vector<float> normalized_data, int data_class) :
 		color = sf::Color::Red;
 	else
 		color = sf::Color::Yellow;
-}
 
-std::vector<sf::Vector2f> DataLine::doubled_coords() {
 
-	std::vector<sf::Vector2f> out;
 
 	for (int i = 0; i < data.size() - 1; i += 2) {
-		out.push_back(sf::Vector2f(data.at(i), data.at(i + 1)));
+		doubled_coords.push_back(sf::Vector2f(data.at(i), data.at(i + 1)));
 	}
 
 	if (data.size() % 2 == 1)
-		out.push_back(sf::Vector2f(data.back(), data.back()));
-
-	return out;
+		doubled_coords.push_back(sf::Vector2f(data.back(), data.back()));
 
 }
 
+std::vector<sf::Vector2f> DataLine::get_doubled_coords() {
+	return doubled_coords;
+}
+
+
+std::vector<sf::Vector2f> DataLine::get_doubled_shifts() {
+	return doubled_shifts;
+}
 
 sf::Vector2f DataLine::bounds() {
 
@@ -55,11 +60,11 @@ sf::Vector2f DataLine::bounds() {
 // Shift the data line in coordinate grid space to match the first element
 void DataLine::shift_coords_to_match(std::vector<ShiftedCoordinateGrid> *coords) {
 
-	std::vector<sf::Vector2f> paired_coordinates = doubled_coords();
+	std::vector<sf::Vector2f> paired_coordinates = get_doubled_coords();
 
 	// Scale the values to pixel space
-	for (int i = 0; i < paired_coordinates.size(); i++)
-		paired_coordinates.at(i) *= SCALE_VALUE;
+	//for (int i = 0; i < paired_coordinates.size(); i++)
+	//	paired_coordinates.at(i) *= SCALE_VALUE;
 
 	if (coords->size() < paired_coordinates.size()) {
 		std::cout << "not enough axes for the amount of points";
@@ -68,10 +73,12 @@ void DataLine::shift_coords_to_match(std::vector<ShiftedCoordinateGrid> *coords)
 
 	for (int i = 1; i < paired_coordinates.size(); i++) {
 
-		sf::Vector2f shift = paired_coordinates.at(0) - paired_coordinates.at(i);
+		sf::Vector2f shift =
+			coordinate_grids->at(0).shift_point_in_normalized_space(paired_coordinates.at(0)) -
+			coordinate_grids->at(i).shift_point_in_normalized_space(paired_coordinates.at(i));
 		shift.x = 0;
 
-		coords->at(i).shift_coordinate_pixel_space(shift);
+		coords->at(i).shift_coordinate(shift);
 
 	}
 
@@ -88,7 +95,7 @@ void DataLine::draw(std::vector<AxisLine> lines, sf::RenderWindow *window) {
 void DataLine::draw(std::vector<ShiftedCoordinateGrid> coordinates, sf::RenderWindow *window) {
 
 	// Get the coordinate pairs and check the data
-	std::vector<sf::Vector2f> paired_coordinates = doubled_coords();
+	std::vector<sf::Vector2f> paired_coordinates = get_doubled_coords();
 
 	if (coordinates.size() < paired_coordinates.size()) {
 		std::cout << "not enough axes for the amount of points";
