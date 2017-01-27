@@ -1,3 +1,4 @@
+#pragma once
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <fstream>
@@ -7,9 +8,9 @@
 #include <float.h>
 #include <list>
 #include "util.hpp"
+#include "DataLine.h"
+#include "ShiftedCoordinateGrid.h"
 
-const int WINDOW_SIZE_X = 800;
-const int WINDOW_SIZE_Y = 800;
 
 int data_point_count(std::string);
 std::vector<std::vector<float>> read_data(std::string);
@@ -65,13 +66,13 @@ int main() {
 
 
 	// Initialize the paired coordinates
-	std::vector<ShiftedCoordinate> coordinates;
+	std::vector<ShiftedCoordinateGrid> coordinates;
 
 	int step = WINDOW_SIZE_X / raw_data.at(0).size();
 	for (int i = 0; i < raw_data.at(0).size() / 2; i++) {
 		//                       + a lil padding
 		int x_pos = step * i * 2 + step / 2;
-		coordinates.push_back(ShiftedCoordinate(sf::Vector2f(x_pos, 400)));
+		coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 400)));
 	}
 
 	
@@ -109,7 +110,7 @@ int main() {
 					data_lines.at(1).shift_coords_to_match(&coordinates);
 				}
 				if (event.key.code == sf::Keyboard::E) {
-
+					coordinates.at(0).collapse_to_point(coordinates.at(1), data_lines.at(1), 0, 1);
 				}
 				if (event.key.code == sf::Keyboard::F) {
 
@@ -118,6 +119,9 @@ int main() {
 
 				}
 				if (event.key.code == sf::Keyboard::H) {
+
+				}
+				if (event.key.code == sf::Keyboard::R) {
 
 				}
 			}
@@ -344,13 +348,13 @@ std::vector<sf::VertexArray> draw_line_graph(std::vector<std::vector<float>> d) 
 // When done, the 2d vector is then returned
 
 std::vector<std::vector<float>> read_data(std::string file_path) {
-	
+
 	std::vector<std::vector<float>> data;
 
 	std::ifstream stream;
 	stream.open(file_path);
 
-	if (!stream){
+	if (!stream) {
 		return data;
 	}
 
@@ -365,13 +369,14 @@ std::vector<std::vector<float>> read_data(std::string file_path) {
 		std::vector<float> entry;
 
 		while (iterator != end) {
-			
+
 			try {
 				entry.push_back(std::stof(*iterator));
-			} catch (std::invalid_argument){
+			}
+			catch (std::invalid_argument) {
 				entry.push_back(0.0f);
 			}
-			
+
 			iterator++;
 		}
 
