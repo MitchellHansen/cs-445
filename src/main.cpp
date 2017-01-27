@@ -19,46 +19,74 @@ sf::Vector2f get_largest_smallest_data_points(std::vector<std::vector<float>> da
 sf::Vector2f get_largest_smallest_data_points_at_index(std::vector<std::vector<float>> data, int index);
 void draw_graph_background(int segment_count, sf::RenderWindow *window);
 void normalize_data(std::vector<std::vector<float>> *data);
+
 float scale_between(float input, float upper_scale, float lower_scale, float upper_bound, float lower_bound) {
 	return (upper_scale - lower_scale) * (input - lower_bound) / (upper_bound - lower_bound) + lower_scale;
 }
 
 
-
 int main() {
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_SIZE_X, WINDOW_SIZE_Y), "cs445");
-
-
-	// This is where the data is read, change the path for another file
-	std::vector<std::vector<float>> data = read_data("../data/car_mpg.txt");
-	normalize_data(&data);
+	sf::FloatRect viewport_rect(0, 0, 800, 800);
+	sf::View viewport(viewport_rect);
+	window.setView(viewport);
 
 	sf::Font f;
 	f.loadFromFile("../assets/code_bold.otf");
 
 	sf::Text y_max_text;
 	y_max_text.setFont(f);
-	y_max_text.setString(std::to_string((int)get_largest_smallest_data_points(data).y));
+	y_max_text.setString("string");
 	y_max_text.setCharacterSize(14);
 	y_max_text.setColor(sf::Color::Black);
 	y_max_text.setPosition(sf::Vector2f(10, 10));
+	
+	
+	
+	
+	// This is where the data is read, change the path for another file
+	std::vector<std::vector<float>> raw_data = read_data("../data/doubled_data.txt");
+	//normalize_data(&raw_data);
 
-	sf::Text x_max_text;
-	x_max_text.setFont(f);
-	x_max_text.setString(std::to_string(data.at(0).size()));
-	x_max_text.setCharacterSize(14);
-	x_max_text.setColor(sf::Color::Black);
-	x_max_text.setPosition(sf::Vector2f(WINDOW_SIZE_X - 30, WINDOW_SIZE_Y - 30));
+
+	std::vector<DataLine> data_lines;
+
+	// Initialize the container for the lines of data
+	for (int line = 0; line < raw_data.size(); line++) {
+		
+		std::vector<float> raw_line_data = raw_data.at(line);
+
+		int data_class = raw_line_data.back();
+		raw_line_data.pop_back();
+
+		data_lines.push_back(DataLine(raw_line_data, data_class));
+	}
 
 
-	std::vector<sf::VertexArray> lines = draw_line_graph(data);
-	std::vector<sf::VertexArray> lines2 = draw_scaled_graph(data);
+	// Initialize the paired coordinates
+	std::vector<ShiftedCoordinate> coordinates;
 
-    data_line l(sf::Vector2f(30, 30), sf::Vector2f(120, 120));
+	int step = WINDOW_SIZE_X / raw_data.at(0).size();
+	for (int i = 0; i < raw_data.at(0).size() / 2; i++) {
+		//                       + a lil padding
+		int x_pos = step * i * 2 + step / 2;
+		coordinates.push_back(ShiftedCoordinate(sf::Vector2f(x_pos, 400)));
+	}
 
-	bool graph_type = false;
+	
+	
 
+	enum Mouse_State { PRESSED, DEPRESSED };
+	Mouse_State mouse_state = Mouse_State::DEPRESSED;
+
+	sf::Vector2i last_mouse_position = sf::Mouse::getPosition();
+
+	int zoom_level = 50;
+
+	enum Graph_Type { A, B, C, D, E, F, G, H };
+	Graph_Type graph_type = A;
+	
 	while (window.isOpen()) {
 
 		sf::Event event;
@@ -68,36 +96,80 @@ int main() {
 				window.close();
 			}
 			if (event.type == sf::Event::KeyPressed){
-				if (event.key.code == sf::Keyboard::Space){
-					if (graph_type)
-						graph_type = false;
-					else
-						graph_type = true;
+				if (event.key.code == sf::Keyboard::A){
+					data_lines.at(0).shift_coords_to_match(&coordinates);
+				}
+				if (event.key.code == sf::Keyboard::B) {
+					coordinates.at(1).flip_bit();
+				}
+				if (event.key.code == sf::Keyboard::C) {
+					coordinates.at(2).flip_bit();
+				}
+				if (event.key.code == sf::Keyboard::D) {
+					data_lines.at(1).shift_coords_to_match(&coordinates);
+				}
+				if (event.key.code == sf::Keyboard::E) {
+
+				}
+				if (event.key.code == sf::Keyboard::F) {
+
+				}
+				if (event.key.code == sf::Keyboard::G) {
+
+				}
+				if (event.key.code == sf::Keyboard::H) {
+
 				}
 			}
+
+			if (event.type == sf::Event::MouseButtonPressed) {
+				mouse_state = Mouse_State::PRESSED;
+				last_mouse_position = sf::Mouse::getPosition();
+			}
+
+			if (event.type == sf::Event::MouseButtonReleased) {
+				mouse_state = Mouse_State::DEPRESSED;
+			}
+
+			if (event.type == sf::Event::MouseMoved) {
+				
+				if (mouse_state == Mouse_State::PRESSED) {					
+					
+
+					sf::Vector2f delta = static_cast<sf::Vector2f>(last_mouse_position - sf::Mouse::getPosition());
+					delta *= ((zoom_level / 100.0f));
+
+					last_mouse_position = sf::Mouse::getPosition();
+					
+					sf::Vector2f center(viewport.getCenter().x, viewport.getCenter().y);
+					center.x += delta.x;
+					center.y += delta.y;
+					viewport.setCenter(center);
+
+					window.setView(viewport);
+				}
+			}
+
+			if (event.type == sf::Event::MouseWheelScrolled) {
+				zoom_level += event.mouseWheelScroll.delta;
+				viewport.setSize((zoom_level / 100.0f) * 1600, (zoom_level / 100.0f) * 1600);
+				window.setView(viewport);
+			}
+
 		}
 
 		window.clear(sf::Color(255, 255, 255));
+
+		for (int i = 0; i < coordinates.size(); i++) {
+			coordinates.at(i).draw(&window);
+			coordinates.at(i).draw_text(&window, i*2);
+		}
+
+		for (auto i : data_lines)
+			i.draw(coordinates, &window);
+
+		window.draw(y_max_text);
 		
-		//draw_graph_background(data.at(0).size(), &window);
-
-//		if (graph_type){
-//			for (auto i : lines2)
-//				window.draw(i);
-//		}
-//		else{
-//			for (auto i : lines)
-//				window.draw(i);
-//
-//		}
-
-       l.draw_line(&window);
-
-
-
-
-        window.draw(y_max_text);
-		window.draw(x_max_text);
 		window.display();
 
 	}
@@ -156,7 +228,7 @@ std::vector<sf::VertexArray> draw_scaled_graph(std::vector<std::vector<float>> d
 
 void normalize_data(std::vector<std::vector<float>> *data) {
 
-	for (int dimension = 0; dimension < data->at(0).size(); dimension++) {
+	for (int dimension = 0; dimension < data->at(0).size() - 1; dimension++) {
 
 		sf::Vector2f bounds = get_largest_smallest_data_points_at_index(*data, dimension);
 
@@ -286,7 +358,7 @@ std::vector<std::vector<float>> read_data(std::string file_path) {
 
 	while (std::getline(stream, line)) {
 
-		std::regex reg("\\s+|\"(.*?)\"|\\,");
+		std::regex reg("\,\\s*");
 		std::regex_token_iterator<std::string::iterator> iterator(line.begin(), line.end(), reg, -1);
 		std::regex_token_iterator<std::string::iterator> end;
 
