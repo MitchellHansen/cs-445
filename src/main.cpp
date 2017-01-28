@@ -46,13 +46,13 @@ int main() {
 	
 	
 	// This is where the data is read, change the path for another file
-	std::vector<std::vector<float>> raw_data = read_data("../data/glass.txt");
+	std::vector<std::vector<float>> raw_data = read_data("../data/default_data.txt");
 
 
     // Uncomment the normalize_data line when using actual data!!! The data on the HW2 pdf was already normalized and in default_data.txt
     // So normalizing it again screws stuff up
 
-    normalize_data(&raw_data);
+    //normalize_data(&raw_data);
 
 
 	std::vector<DataLine> data_lines;
