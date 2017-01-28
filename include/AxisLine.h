@@ -14,15 +14,22 @@ public:
 	sf::Vector2f head;
 	sf::Vector2f tail;
 
+    sf::Vector2f shift {0, 0};
+
 	void draw_line(sf::RenderWindow *window) {
 
-		sfLine l(head, tail, 2.0f, sf::Color::Blue);
+		sfLine l(head+shift, tail+shift, 2.0f, sf::Color::Blue);
 		window->draw(l);
 	}
 
 	sf::Vector2f get_point(float normalized_point) {
-		return ((head - tail) * normalized_point) + tail;
+		sf::Vector2f val = ((tail - head) * normalized_point) + head;
+        return val + shift;
 	}
+
+    void shift_line(sf::Vector2f shift){
+        this->shift = shift;
+    }
 
 private:
 

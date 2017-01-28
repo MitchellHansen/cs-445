@@ -75,6 +75,18 @@ void DataLine::shift_coords_to_match(std::vector<ShiftedCoordinateGrid> *coords)
 		coords->at(i).shift_coordinate_pixel_space(shift);
 
 	}
+}
+
+void DataLine::shift_axis_lines_to_point(std::vector<AxisLine> *lines, int point){
+
+    float point_pos_on_line = data.at(point);
+
+    sf::Vector2f origin = lines->at(point).get_point(point_pos_on_line);
+
+    for (int i = 0; i < lines->size(); i++){
+        sf::Vector2f line_origin = lines->at(i).get_point(data.at(i));
+        lines->at(i).shift_line(origin - line_origin);
+    }
 
 }
 
@@ -87,7 +99,7 @@ void DataLine::draw(std::vector<AxisLine> lines, sf::RenderWindow *window) {
 
         sf::Vector2f point = lines.at(i).get_point(data.at(i));
 
-        point.y = window->getSize().y - point.y;
+        //point.y = window->getSize().y - point.y;
 
         sf::Vertex v1(point);
         v1.color = color;

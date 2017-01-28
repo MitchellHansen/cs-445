@@ -18,6 +18,7 @@ public:
 	sf::Vector2f bounds();
 
 	void shift_coords_to_match(std::vector<ShiftedCoordinateGrid> *coords);
+    void shift_axis_lines_to_point(std::vector<AxisLine> *lines, int point);
 
 	void draw(std::vector<AxisLine> lines, sf::RenderWindow *window);
 	void draw(std::vector<ShiftedCoordinateGrid> coordinates, sf::RenderWindow *window);

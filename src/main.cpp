@@ -46,13 +46,13 @@ int main() {
 	
 	
 	// This is where the data is read, change the path for another file
-	std::vector<std::vector<float>> raw_data = read_data("../data/default_data.txt");
+	std::vector<std::vector<float>> raw_data = read_data("../data/glass.txt");
 
 
     // Uncomment the normalize_data line when using actual data!!! The data on the HW2 pdf was already normalized and in default_data.txt
     // So normalizing it again screws stuff up
 
-    //normalize_data(&raw_data);
+    normalize_data(&raw_data);
 
 
 	std::vector<DataLine> data_lines;
@@ -81,7 +81,7 @@ int main() {
 
     // Initialize the paired coordinates
     std::vector<AxisLine> axis_lines;
-    for (int i = 0; i < raw_data.at(0).size(); i++) {
+    for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
 
         int x_pos = step * i + step / 2;
         axis_lines.push_back(AxisLine(sf::Vector2f(x_pos, 600), sf::Vector2f(x_pos, 200)));
@@ -105,46 +105,28 @@ int main() {
 			}
 			if (event.type == sf::Event::KeyPressed){
 				if (event.key.code == sf::Keyboard::A){
-					data_lines.at(0).shift_coords_to_match(&coordinates);
+                    axis_lines.clear();
+                    for (int i = 0; i < raw_data.at(0).size()-1; i++) {
+
+                        int x_pos = step * i + step / 2;
+                        axis_lines.push_back(AxisLine(sf::Vector2f(x_pos, 600), sf::Vector2f(x_pos, 200)));
+                    }
 				}
 				if (event.key.code == sf::Keyboard::B) {
-					coordinates.at(1).flip_bit();
+                    axis_lines.clear();
+                    for (int i = 0; i < raw_data.at(0).size()-1; i++) {
+
+                        int top_x_pos = (WINDOW_SIZE_X / raw_data.at(0).size()) * i;
+                        int bottom_x_pos = 200 + (400 / raw_data.at(0).size()) * i;
+                        axis_lines.push_back(AxisLine(sf::Vector2f(bottom_x_pos, 600), sf::Vector2f(top_x_pos, 200)));
+                    }
 				}
 				if (event.key.code == sf::Keyboard::C) {
-					coordinates.at(2).flip_bit();
+					data_lines.at(0).shift_axis_lines_to_point(&axis_lines, 1);
 				}
-				if (event.key.code == sf::Keyboard::D) {
-					data_lines.at(1).shift_coords_to_match(&coordinates);
-				}
-				if (event.key.code == sf::Keyboard::E) {
-					coordinates.at(0).collapse_to_point(coordinates.at(1), data_lines.at(1), 0, 1);
-				}
-				if (event.key.code == sf::Keyboard::F) {
-                    coordinates.at(2).collapse_to_point(coordinates.at(1), data_lines.at(1), 2, 1);
-				}
-				if (event.key.code == sf::Keyboard::G) {
-                    sf::Vector2f p1 = coordinates.at(0).get_origin();
-                    sf::Vector2f p2 = coordinates.at(1).get_origin();
-
-                    coordinates.at(0).set_position(p2);
-                    coordinates.at(1).set_position(p1);
-
-                    ShiftedCoordinateGrid g1 = coordinates.at(0);
-                    ShiftedCoordinateGrid g2 = coordinates.at(1);
-
-                    coordinates.at(0) = g2;
-                    coordinates.at(1) = g1;
-				}
-				if (event.key.code == sf::Keyboard::H) {
-                    if (graph_type == 0)
-                        graph_type = 1;
-                    else
-                        graph_type = 0;
-				}
-				if (event.key.code == sf::Keyboard::R) {
-                    for (auto &i: coordinates)
-                        i.reset();
-				}
+                if (event.key.code == sf::Keyboard::D) {
+                    data_lines.at(1).shift_axis_lines_to_point(&axis_lines, 3);
+                }
 			}
 
 			if (event.type == sf::Event::MouseButtonPressed) {
@@ -186,23 +168,11 @@ int main() {
 
 		window.clear(sf::Color(255, 255, 255));
 
+        for (auto i: axis_lines)
+            i.draw_line(&window);
+        for (auto i: data_lines)
+            i.draw(axis_lines, &window);
 
-
-        if (graph_type == 1) {
-            for (auto i: axis_lines)
-                i.draw_line(&window);
-            for (auto i: data_lines)
-                i.draw(axis_lines, &window);
-        }
-        else if (graph_type == 0) {
-            for (int i = 0; i < coordinates.size(); i++) {
-                coordinates.at(i).draw(&window);
-                coordinates.at(i).draw_text(&window);
-            }
-            for (auto i : data_lines) {
-                i.draw(coordinates, &window);
-            }
-        }
 		window.draw(y_max_text);
 		
 		window.display();
