@@ -41,18 +41,18 @@ int main() {
 	y_max_text.setFont(f);
 	y_max_text.setString("Visual Analytics\nMitchell Hansen\nFrank Senseney\nMatthew Stalder");
 	y_max_text.setCharacterSize(12);
-	y_max_text.setFillColor(sf::Color::Black);
+	y_max_text.setColor(sf::Color::Black);
 	y_max_text.setPosition(sf::Vector2f(10, 10));
 	
 	
 	// This is where the data is read, change the path for another file
-	std::vector<std::vector<float>> raw_data = read_data("../data/default_data.txt");
+	std::vector<std::vector<float>> raw_data = read_data("../data/car_mpg.txt");
 
 
     // Uncomment the normalize_data line when using actual data!!! The data on the HW2 pdf was already normalized and in default_data.txt
     // So normalizing it again screws stuff up
 
-    //normalize_data(&raw_data);
+    normalize_data(&raw_data);
 
 
 	std::vector<DataLine> data_lines;
@@ -393,7 +393,7 @@ std::vector<std::vector<float>> read_data(std::string file_path) {
 
 	while (std::getline(stream, line)) {
 
-		std::regex reg("\\,\\s*");
+		std::regex reg("\\s+|\"(.*?)\"|\\,");
 		std::regex_token_iterator<std::string::iterator> iterator(line.begin(), line.end(), reg, -1);
 		std::regex_token_iterator<std::string::iterator> end;
 
