@@ -2,8 +2,15 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include "AxisLine.h"
+#include "BezierAxisLine.h"
+#include <SFML/Graphics/Vertex.hpp>
+#include <fstream>
+#include <iostream>
+#include "ShiftedCoordinateGrid.h"
+#include <float.h>
 
 class ShiftedCoordinateGrid;
+class AxisLine;
 
 class DataLine {
 
@@ -22,6 +29,7 @@ public:
 
 	void draw(std::vector<AxisLine> lines, sf::RenderWindow *window);
 	void draw(std::vector<ShiftedCoordinateGrid> coordinates, sf::RenderWindow *window);
+    void draw(std::vector<BezierAxisLine> coordinates, sf::RenderWindow *window);
 
 private:
 

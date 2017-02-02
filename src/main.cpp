@@ -7,6 +7,7 @@
 #include <math.h>
 #include <float.h>
 #include <list>
+#include <BezierAxisLine.h>
 #include "util.hpp"
 #include "DataLine.h"
 #include "ShiftedCoordinateGrid.h"
@@ -46,13 +47,13 @@ int main() {
 	
 	
 	// This is where the data is read, change the path for another file
-	std::vector<std::vector<float>> raw_data = read_data("../data/default_data.txt");
+	std::vector<std::vector<float>> raw_data = read_data("../data/glass.txt");
 
 
     // Uncomment the normalize_data line when using actual data!!! The data on the HW2 pdf was already normalized and in default_data.txt
     // So normalizing it again screws stuff up
 
-    //normalize_data(&raw_data);
+    normalize_data(&raw_data);
 
 
 	std::vector<DataLine> data_lines;
@@ -79,12 +80,20 @@ int main() {
 		coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 400), i));
 	}
 
-    // Initialize the paired coordinates
+    // Initialize the axis coordinates
     std::vector<AxisLine> axis_lines;
     for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
 
         int x_pos = step * i + step / 2;
         axis_lines.push_back(AxisLine(sf::Vector2f(x_pos, 600), sf::Vector2f(x_pos, 200)));
+    }
+
+    // Initialize the bezier coords
+    std::vector<BezierAxisLine> bezier_axis_lines;
+    for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
+
+        int x_pos = step * i + step / 2;
+        bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200)));
     }
 
     int graph_type = 0;
@@ -105,27 +114,16 @@ int main() {
 			}
 			if (event.type == sf::Event::KeyPressed){
 				if (event.key.code == sf::Keyboard::A){
-                    axis_lines.clear();
-                    for (int i = 0; i < raw_data.at(0).size()-1; i++) {
 
-                        int x_pos = step * i + step / 2;
-                        axis_lines.push_back(AxisLine(sf::Vector2f(x_pos, 600), sf::Vector2f(x_pos, 200)));
-                    }
 				}
 				if (event.key.code == sf::Keyboard::B) {
-                    axis_lines.clear();
-                    for (int i = 0; i < raw_data.at(0).size()-1; i++) {
 
-                        int top_x_pos = (WINDOW_SIZE_X / raw_data.at(0).size()) * i;
-                        int bottom_x_pos = 200 + (400 / raw_data.at(0).size()) * i;
-                        axis_lines.push_back(AxisLine(sf::Vector2f(bottom_x_pos, 600), sf::Vector2f(top_x_pos, 200)));
-                    }
 				}
 				if (event.key.code == sf::Keyboard::C) {
-					data_lines.at(0).shift_axis_lines_to_point(&axis_lines, 1);
+
 				}
                 if (event.key.code == sf::Keyboard::D) {
-                    data_lines.at(1).shift_axis_lines_to_point(&axis_lines, 3);
+
                 }
 			}
 
@@ -168,10 +166,14 @@ int main() {
 
 		window.clear(sf::Color(255, 255, 255));
 
-        for (auto i: axis_lines)
-            i.draw_line(&window);
+//        for (auto i: axis_lines)
+//            i.draw_line(&window);
+//        for (auto i: data_lines)
+//            i.draw(axis_lines, &window);
         for (auto i: data_lines)
-            i.draw(axis_lines, &window);
+            i.draw(bezier_axis_lines, &window);
+        for (auto i: bezier_axis_lines)
+            i.draw(&window);
 
 		window.draw(y_max_text);
 		

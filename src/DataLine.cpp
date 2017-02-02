@@ -1,10 +1,5 @@
-#pragma once
-#include <SFML/Graphics/Vertex.hpp>
-#include <fstream>
+
 #include "DataLine.h"
-#include <iostream>
-#include "ShiftedCoordinateGrid.h"
-#include <float.h>
 
 DataLine::DataLine(std::vector<float> normalized_data, int data_class) :
 	data(normalized_data), data_class(data_class) {
@@ -106,6 +101,32 @@ void DataLine::draw(std::vector<AxisLine> lines, sf::RenderWindow *window) {
 
         vertex_array.append(v1);
 
+    }
+
+    window->draw(vertex_array);
+
+}
+
+void DataLine::draw(std::vector<BezierAxisLine> lines, sf::RenderWindow *window) {
+
+    sf::VertexArray vertex_array;
+    vertex_array.setPrimitiveType(sf::LinesStrip);
+
+    for (int i = 0; i < data.size(); i++){
+
+        sf::Vector2f point = lines.at(i).get_point(data.at(i));
+
+        sf::Vertex v1(point);
+        v1.color = color;
+
+        vertex_array.append(v1);
+
+        if (i + 1 < data.size()) {
+            sf::Vector2f midpoint = lines.at(i).get_midpoint(data.at(i), lines.at(i+1), data.at(i+1));
+            sf::Vertex v2(midpoint);
+            v2.color = color;
+            vertex_array.append(v2);
+        }
     }
 
     window->draw(vertex_array);

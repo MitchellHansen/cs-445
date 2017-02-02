@@ -26,7 +26,7 @@ include_directories(include)
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "include/*.h" "include/*.hpp")
 
-add_executable(${PNAME} ${SOURCES} ${HEADERS})
+add_executable(${PNAME} ${SOURCES} ${HEADERS} src/BezierAxisLine.cpp include/BezierAxisLine.h)
 
 SOURCE_GROUP("headers" FILES ${HEADERS}) 
 SOURCE_GROUP("sources" FILES ${SOURCES})
