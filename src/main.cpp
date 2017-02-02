@@ -132,8 +132,14 @@ int main() {
                     }
 
 				}
-				if (event.key.code == sf::Keyboard::C) {
+				if (event.key.code == sf::Keyboard::R) {
+                    bezier_axis_lines.clear();
+                    std::vector<int> reordered_lines = data_lines.at(10).reorder();
+                    for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
 
+                        int x_pos = step * i + step / 2;
+                        bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200), reordered_lines.at(i)));
+                    }
 				}
                 if (event.key.code == sf::Keyboard::D) {
 
