@@ -114,7 +114,8 @@ void DataLine::draw(std::vector<BezierAxisLine> lines, sf::RenderWindow *window)
 
     for (int i = 0; i < data.size(); i++){
 
-        sf::Vector2f point = lines.at(i).get_point(data.at(i));
+        int index = lines.at(i).get_index();
+        sf::Vector2f point = lines.at(i).get_point(data.at(index));
 
         sf::Vertex v1(point);
         v1.color = color;
@@ -123,6 +124,10 @@ void DataLine::draw(std::vector<BezierAxisLine> lines, sf::RenderWindow *window)
 
         if (i + 1 < data.size()) {
             sf::Vector2f midpoint = lines.at(i).get_midpoint(data.at(i), lines.at(i+1), data.at(i+1));
+
+
+            if (data_class == 1)
+                midpoint.y = (lines.at(i).head.y - midpoint.y) + lines.at(i).head.y;
             sf::Vertex v2(midpoint);
             v2.color = color;
             vertex_array.append(v2);
@@ -166,4 +171,15 @@ void DataLine::draw(std::vector<ShiftedCoordinateGrid> coordinates, sf::RenderWi
 	}
 
 	window->draw(vertex_array);
+}
+
+std::vector<int> DataLine::reorder() {
+
+    std::vector<int> idx(data.size());
+    std::iota(idx.begin(), idx.end(), 0);
+
+    std::sort(idx.begin(), idx.end(),
+         [&](size_t i1, size_t i2) {return data[i1] < data[i2];});
+
+    return idx;
 }

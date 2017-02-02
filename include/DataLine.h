@@ -31,6 +31,8 @@ public:
 	void draw(std::vector<ShiftedCoordinateGrid> coordinates, sf::RenderWindow *window);
     void draw(std::vector<BezierAxisLine> coordinates, sf::RenderWindow *window);
 
+    std::vector<int> reorder();
+
 private:
 
 	std::vector<float> data;

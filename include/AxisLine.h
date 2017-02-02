@@ -8,7 +8,6 @@ class AxisLine {
 public:
 	AxisLine(sf::Vector2f head, sf::Vector2f tail) :
 		head(head), tail(tail) {
-
     }
 
 	sf::Vector2f head;

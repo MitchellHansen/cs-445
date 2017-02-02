@@ -69,7 +69,6 @@ int main() {
 		data_lines.push_back(DataLine(raw_line_data, data_class));
 	}
 
-
 	// Initialize the paired coordinates
 	std::vector<ShiftedCoordinateGrid> coordinates;
 
@@ -93,7 +92,7 @@ int main() {
     for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
 
         int x_pos = step * i + step / 2;
-        bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200)));
+        bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200), i));
     }
 
     int graph_type = 0;
@@ -115,8 +114,22 @@ int main() {
 			if (event.type == sf::Event::KeyPressed){
 				if (event.key.code == sf::Keyboard::A){
 
+                    bezier_axis_lines.clear();
+                    std::vector<int> reordered_lines = data_lines.at(10).reorder();
+                    for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
+
+                        int x_pos = step * i + step / 2;
+                        bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200), reordered_lines.at(i)));
+                    }
 				}
 				if (event.key.code == sf::Keyboard::B) {
+
+                    bezier_axis_lines.clear();
+                    for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
+
+                        int x_pos = step * i + step / 2;
+                        bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200), i));
+                    }
 
 				}
 				if (event.key.code == sf::Keyboard::C) {
@@ -166,10 +179,6 @@ int main() {
 
 		window.clear(sf::Color(255, 255, 255));
 
-//        for (auto i: axis_lines)
-//            i.draw_line(&window);
-//        for (auto i: data_lines)
-//            i.draw(axis_lines, &window);
         for (auto i: data_lines)
             i.draw(bezier_axis_lines, &window);
         for (auto i: bezier_axis_lines)
