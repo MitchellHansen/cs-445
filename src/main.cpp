@@ -47,11 +47,7 @@ int main() {
 	
 	
 	// This is where the data is read, change the path for another file
-	std::vector<std::vector<float>> raw_data = read_data("../data/glass.txt");
-
-
-    // Uncomment the normalize_data line when using actual data!!! The data on the HW2 pdf was already normalized and in default_data.txt
-    // So normalizing it again screws stuff up
+	std::vector<std::vector<float>> raw_data = read_data("../data/car_mpg.txt");
 
     normalize_data(&raw_data);
 
@@ -101,6 +97,8 @@ int main() {
 
 	sf::Vector2i last_mouse_position = sf::Mouse::getPosition();
 
+    data_lines.at(1).shift_axis_lines_to_point(&axis_lines, 3);
+
 	int zoom_level = 50;
 	
 	while (window.isOpen()) {
@@ -112,17 +110,7 @@ int main() {
 				window.close();
 			}
 			if (event.type == sf::Event::KeyPressed){
-				if (event.key.code == sf::Keyboard::A){
-
-                    bezier_axis_lines.clear();
-                    std::vector<int> reordered_lines = data_lines.at(10).reorder();
-                    for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
-
-                        int x_pos = step * i + step / 2;
-                        bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200), reordered_lines.at(i)));
-                    }
-				}
-				if (event.key.code == sf::Keyboard::B) {
+				if (event.key.code == sf::Keyboard::A) {
 
                     bezier_axis_lines.clear();
                     for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
@@ -133,15 +121,21 @@ int main() {
 
 				}
 				if (event.key.code == sf::Keyboard::R) {
+
                     bezier_axis_lines.clear();
-                    std::vector<int> reordered_lines = data_lines.at(10).reorder();
+                    std::vector<int> reordered_lines = data_lines.at(4).reorder();
                     for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
 
                         int x_pos = step * i + step / 2;
                         bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200), reordered_lines.at(i)));
                     }
 				}
-                if (event.key.code == sf::Keyboard::D) {
+                if (event.key.code == sf::Keyboard::Space){
+
+                    if (graph_type == 0)
+                        graph_type = 1;
+                    else
+                        graph_type = 0;
 
                 }
 			}
@@ -185,10 +179,20 @@ int main() {
 
 		window.clear(sf::Color(255, 255, 255));
 
-        for (auto i: data_lines)
-            i.draw(bezier_axis_lines, &window);
-        for (auto i: bezier_axis_lines)
-            i.draw(&window);
+
+        if (graph_type == 0) {
+            for (auto i: data_lines)
+                i.draw_bezier(bezier_axis_lines, &window);
+            for (auto i: bezier_axis_lines)
+                i.draw(&window);
+        }
+        else{
+            for (auto i: axis_lines)
+                i.draw_line(&window);
+            for (auto i: data_lines)
+                i.draw_bezier(axis_lines, &window);
+        }
+
 
 		window.draw(y_max_text);
 		
@@ -380,7 +384,7 @@ std::vector<std::vector<float>> read_data(std::string file_path) {
 
 	while (std::getline(stream, line)) {
 
-		std::regex reg("\\,\\s*");
+		std::regex reg("\\s+|\"(.*?)\"|\\,");
 		std::regex_token_iterator<std::string::iterator> iterator(line.begin(), line.end(), reg, -1);
 		std::regex_token_iterator<std::string::iterator> end;
 

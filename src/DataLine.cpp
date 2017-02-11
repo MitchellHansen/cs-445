@@ -107,6 +107,45 @@ void DataLine::draw(std::vector<AxisLine> lines, sf::RenderWindow *window) {
 
 }
 
+void DataLine::draw_bezier(std::vector<AxisLine> lines, sf::RenderWindow *window) {
+
+    for (int i = 0; i < data.size(); i++){
+
+
+        sf::Vector2f point = lines.at(i).get_point(data.at(i));
+
+        if (i + 1 < data.size()) {
+
+            sf::Vector2f midpoint = lines.at(i).get_midpoint(data.at(i), lines.at(i+1), data.at(i+1));
+
+            if (data_class == 1)
+                midpoint.x = (point.x - midpoint.x) + point.x;
+
+            sf::VertexArray vertices(sf::LinesStrip, 0);
+
+            sf::Vector2f p1 = point;
+            sf::Vector2f p2 = lines.at(i+1).get_point(data.at(i+1));
+            sf::Vector2f p3 = midpoint;
+
+            std::vector<sf::Vector2f> points =
+                    CalcCubicBezier(
+                            point,
+                            lines.at(i+1).get_point(data.at(i+1)),
+                            midpoint,
+                            midpoint,
+                            10
+                    );
+
+            for (std::vector<sf::Vector2f>::const_iterator a = points.begin(); a != points.end(); ++a)
+                vertices.append(sf::Vertex(*a, color));
+
+            window->draw(vertices);
+
+        }
+    }
+
+}
+
 void DataLine::draw(std::vector<BezierAxisLine> lines, sf::RenderWindow *window) {
 
     sf::VertexArray vertex_array;
@@ -131,12 +170,64 @@ void DataLine::draw(std::vector<BezierAxisLine> lines, sf::RenderWindow *window)
             sf::Vertex v2(midpoint);
             v2.color = color;
             vertex_array.append(v2);
+
+            sf::VertexArray vertices(sf::LinesStrip, 0);
+
+            std::vector<sf::Vector2f> points =
+                    CalcCubicBezier(
+                            point,
+                            lines.at(i+1).get_point(data.at(index)),
+                            midpoint,
+                            midpoint,
+                            10);
+
+            for (std::vector<sf::Vector2f>::const_iterator a = points.begin(); a != points.end(); ++a)
+                vertices.append(sf::Vertex(*a, sf::Color::Magenta));
+
+            window->draw(vertices);
+
         }
     }
 
     window->draw(vertex_array);
 
 }
+
+void DataLine::draw_bezier(std::vector<BezierAxisLine> lines, sf::RenderWindow *window) {
+
+    for (int i = 0; i < data.size(); i++){
+
+        int index = lines.at(i).get_index();
+        sf::Vector2f point = lines.at(i).get_point(data.at(index));
+
+        if (i + 1 < data.size()) {
+
+            sf::Vector2f midpoint = lines.at(i).get_midpoint(data.at(i), lines.at(i+1), data.at(i+1));
+
+            if (data_class == 1)
+                midpoint.y = (lines.at(i).head.y - midpoint.y) + lines.at(i).head.y;
+
+            sf::VertexArray vertices(sf::LinesStrip, 0);
+
+            std::vector<sf::Vector2f> points =
+                    CalcCubicBezier(
+                            point,
+                            lines.at(i+1).get_point(data.at(index)),
+                            midpoint,
+                            midpoint,
+                            10);
+
+            for (std::vector<sf::Vector2f>::const_iterator a = points.begin(); a != points.end(); ++a)
+                vertices.append(sf::Vertex(*a, color));
+
+            window->draw(vertices);
+
+        }
+    }
+
+}
+
+
 
 void DataLine::draw(std::vector<ShiftedCoordinateGrid> coordinates, sf::RenderWindow *window) {
 

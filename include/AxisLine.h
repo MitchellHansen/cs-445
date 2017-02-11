@@ -18,6 +18,7 @@ public:
 	void draw_line(sf::RenderWindow *window);
 
 	sf::Vector2f get_point(float normalized_point);
+    sf::Vector2f get_midpoint(float normalized_point, AxisLine next_line, float next_normalized_point);
 
     void shift_line(sf::Vector2f shift);
 

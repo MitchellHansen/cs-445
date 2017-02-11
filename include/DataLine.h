@@ -28,8 +28,10 @@ public:
     void shift_axis_lines_to_point(std::vector<AxisLine> *lines, int point);
 
 	void draw(std::vector<AxisLine> lines, sf::RenderWindow *window);
+    void draw_bezier(std::vector<AxisLine> lines, sf::RenderWindow *window);
 	void draw(std::vector<ShiftedCoordinateGrid> coordinates, sf::RenderWindow *window);
     void draw(std::vector<BezierAxisLine> coordinates, sf::RenderWindow *window);
+    void draw_bezier(std::vector<BezierAxisLine> lines, sf::RenderWindow *window);
 
     std::vector<int> reorder();
 
