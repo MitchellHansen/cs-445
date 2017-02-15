@@ -1,0 +1,17 @@
+
+Observations:
+
+1.) Equation of a line between two lines and then smoothly interpolating between A and B
+2.) Tweening between two lines, 3 points, ABC is the implementation of bezier curves
+3.) Possible to reconstruct data when using a lossless representation 
+4.) Colocated and parrallel are never the silver bullet for data
+5.) You must do both visual and analytical separation of data
+
+Questions:
+
+1.) Specific examples of data sets which use each representation?
+2.) Clues to tell when a type of representation should be used?
+3.) Are chernoff faces ever used outside of novelty?
+4.) 
+5.) 
+

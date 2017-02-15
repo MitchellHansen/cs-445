@@ -42,7 +42,7 @@ int main() {
 	y_max_text.setFont(f);
 	y_max_text.setString("Visual Analytics\nMitchell Hansen\nFrank Senseney\nMatthew Stalder");
 	y_max_text.setCharacterSize(12);
-	y_max_text.setFillColor(sf::Color::Black);
+	y_max_text.setColor(sf::Color::Black);
 	y_max_text.setPosition(sf::Vector2f(10, 10));
 	
 	
