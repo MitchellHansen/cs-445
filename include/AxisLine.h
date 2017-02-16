@@ -8,21 +8,19 @@ class AxisLine {
 public:
 	AxisLine(sf::Vector2f head, sf::Vector2f tail) :
 		head(head), tail(tail) {
-
-	}
+    }
 
 	sf::Vector2f head;
 	sf::Vector2f tail;
 
-	void draw_line(sf::RenderWindow *window) {
+    sf::Vector2f shift {0, 0};
 
-		sfLine l(head, tail, 2.0f, sf::Color::Blue);
-		window->draw(l);
-	}
+	void draw_line(sf::RenderWindow *window);
 
-	sf::Vector2f get_point(float normalized_point) {
-		return ((head - tail) * normalized_point) + tail;
-	}
+	sf::Vector2f get_point(float normalized_point);
+    sf::Vector2f get_midpoint(float normalized_point, AxisLine next_line, float next_normalized_point);
+
+    void shift_line(sf::Vector2f shift);
 
 private:
 

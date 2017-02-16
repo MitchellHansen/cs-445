@@ -2,8 +2,15 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include "AxisLine.h"
+#include "BezierAxisLine.h"
+#include <SFML/Graphics/Vertex.hpp>
+#include <fstream>
+#include <iostream>
+#include "ShiftedCoordinateGrid.h"
+#include <float.h>
 
 class ShiftedCoordinateGrid;
+class AxisLine;
 
 class DataLine {
 
@@ -18,9 +25,15 @@ public:
 	sf::Vector2f bounds();
 
 	void shift_coords_to_match(std::vector<ShiftedCoordinateGrid> *coords);
+    void shift_axis_lines_to_point(std::vector<AxisLine> *lines, int point);
 
 	void draw(std::vector<AxisLine> lines, sf::RenderWindow *window);
+    void draw_bezier(std::vector<AxisLine> lines, sf::RenderWindow *window);
 	void draw(std::vector<ShiftedCoordinateGrid> coordinates, sf::RenderWindow *window);
+    void draw(std::vector<BezierAxisLine> coordinates, sf::RenderWindow *window);
+    void draw_bezier(std::vector<BezierAxisLine> lines, sf::RenderWindow *window);
+
+    std::vector<int> reorder();
 
 private:
 
