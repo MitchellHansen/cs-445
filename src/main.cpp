@@ -13,14 +13,12 @@
 #include "ShiftedCoordinateGrid.h"
 
 
-int data_point_count(std::string);
 std::vector<std::vector<float>> read_data(std::string);
-std::vector<sf::VertexArray> draw_line_graph(std::vector<std::vector<float>>);
-std::vector<sf::VertexArray> draw_scaled_graph(std::vector<std::vector<float>>);
 sf::Vector2f get_largest_smallest_data_points(std::vector<std::vector<float>> data);
 sf::Vector2f get_largest_smallest_data_points_at_index(std::vector<std::vector<float>> data, int index);
-void draw_graph_background(int segment_count, sf::RenderWindow *window);
 void normalize_data(std::vector<std::vector<float>> *data);
+std::vector<std::vector<float>> cull_data_within_t(std::vector<std::vector<float>> *data);
+std::vector<std::vector<float>> non_culled_data(std::vector<std::vector<float>> *data);
 
 float scale_between(float input, float upper_scale, float lower_scale, float upper_bound, float lower_bound) {
 	return (upper_scale - lower_scale) * (input - lower_bound) / (upper_bound - lower_bound) + lower_scale;
@@ -51,8 +49,11 @@ int main() {
 
     normalize_data(&raw_data);
 
+    std::vector<std::vector<float>> culled_data = cull_data_within_t(&raw_data);
+    std::vector<std::vector<float>> culled_data_outside_t = non_culled_data(&raw_data);
 
-	std::vector<DataLine> data_lines;
+
+    std::vector<DataLine> data_lines;
 
 	// Initialize the container for the lines of data
 	for (int line = 0; line < raw_data.size(); line++) {
@@ -68,11 +69,11 @@ int main() {
 	// Initialize the paired coordinates
 	std::vector<ShiftedCoordinateGrid> coordinates;
 
-	int step = WINDOW_SIZE_X / raw_data.at(0).size();
-	for (int i = 0; i < raw_data.at(0).size() / 2; i++) {
+	int step = WINDOW_SIZE_X / culled_data.at(0).size();
+	for (int i = 0; i < culled_data.at(0).size() / 2; i++) {
 		//                       + a lil padding
 		int x_pos = step * i * 2 + step / 2;
-		coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 400), i));
+		coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 200), i));
 	}
 
     // Initialize the axis coordinates
@@ -91,13 +92,10 @@ int main() {
         bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200), i));
     }
 
-    int graph_type = 0;
 
 	Mouse_State mouse_state = Mouse_State::DEPRESSED;
 
 	sf::Vector2i last_mouse_position = sf::Mouse::getPosition();
-
-    data_lines.at(1).shift_axis_lines_to_point(&axis_lines, 3);
 
 	int zoom_level = 50;
 	
@@ -110,35 +108,118 @@ int main() {
 				window.close();
 			}
 			if (event.type == sf::Event::KeyPressed){
-				if (event.key.code == sf::Keyboard::A) {
+				if (event.key.code == sf::Keyboard::Num1) {
 
-                    bezier_axis_lines.clear();
-                    for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
+                    coordinates.clear();
 
-                        int x_pos = step * i + step / 2;
-                        bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200), i));
+                    int step = WINDOW_SIZE_X / culled_data.at(0).size();
+                    for (int i = 0; i < culled_data.at(0).size() / 2; i++) {
+                        //                       + a lil padding
+                        int x_pos = step * i * 2 + step / 2;
+                        coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 200), i));
                     }
 
-				}
-				if (event.key.code == sf::Keyboard::R) {
+                    data_lines.clear();
+                    // Initialize the container for the lines of data
+                    for (int line = 0; line < raw_data.size(); line++) {
 
-                    bezier_axis_lines.clear();
-                    std::vector<int> reordered_lines = data_lines.at(4).reorder();
-                    for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
+                        std::vector<float> raw_line_data = raw_data.at(line);
 
-                        int x_pos = step * i + step / 2;
-                        bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200), reordered_lines.at(i)));
+                        int data_class = raw_line_data.back();
+                        raw_line_data.pop_back();
+
+                        data_lines.push_back(DataLine(raw_line_data, data_class));
                     }
-				}
-                if (event.key.code == sf::Keyboard::Space){
-
-                    if (graph_type == 0)
-                        graph_type = 1;
-                    else
-                        graph_type = 0;
-
                 }
+
+                if (event.key.code == sf::Keyboard::Num2) {
+                    coordinates.clear();
+
+                    int step = WINDOW_SIZE_X / culled_data.at(0).size();
+                    for (int i = 0; i < culled_data.at(0).size() / 2; i++) {
+                        //                       + a lil padding
+                        int x_pos = step * i * 2 + step / 2;
+                        coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(100, 100), i));
+                    }
+				}
+				if (event.key.code == sf::Keyboard::Num3) {
+
+                    coordinates.clear();
+
+                    int step = WINDOW_SIZE_X / culled_data.at(0).size();
+                    for (int i = 0; i < culled_data.at(0).size() / 2; i++) {
+                        //                       + a lil padding
+                        int x_pos = step * i * 2 + step / 2;
+                        coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos/6, x_pos/6), i));
+                    }
+
+                    for (int i = coordinates.size() - 1; i > 0; i--){
+                        coordinates.at(i).collapse_to_point(coordinates.at(i-1), data_lines.at(0), i, i-1);
+                    }
+				}
+                if (event.key.code == sf::Keyboard::Num4) {
+
+                    data_lines.clear();
+
+                    // Initialize the container for the lines of data
+                    for (int line = 0; line < culled_data.size(); line++) {
+
+                        std::vector<float> raw_line_data = culled_data.at(line);
+
+                        int data_class = raw_line_data.back();
+                        raw_line_data.pop_back();
+
+                        if (data_class == 1)
+                            data_lines.push_back(DataLine(raw_line_data, data_class));
+                    }
+
+                    // Initialize the container for the lines of data
+                    for (int line = 0; line < culled_data_outside_t.size(); line++) {
+
+                        std::vector<float> raw_line_data = culled_data_outside_t.at(line);
+
+                        int data_class = raw_line_data.back();
+                        raw_line_data.pop_back();
+
+                        if (data_class == 2)
+                            data_lines.push_back(DataLine(raw_line_data, data_class));
+                    }
+                }
+
+
 			}
+
+            if (event.key.code == sf::Keyboard::Num5) {
+                data_lines.clear();
+
+                // Initialize the container for the lines of data
+                for (int line = 0; line < culled_data.size(); line++) {
+
+                    std::vector<float> raw_line_data = culled_data.at(line);
+
+                    int data_class = raw_line_data.back();
+                    raw_line_data.pop_back();
+
+                    if (data_class == 1)
+                        data_lines.push_back(DataLine(raw_line_data, data_class));
+                }
+
+                // Initialize the container for the lines of data
+                for (int line = 0; line < culled_data_outside_t.size(); line++) {
+
+                    std::vector<float> raw_line_data = culled_data_outside_t.at(line);
+
+                    int data_class = raw_line_data.back();
+                    raw_line_data.pop_back();
+
+                    if (data_class == 2)
+                        data_lines.push_back(DataLine(raw_line_data, data_class));
+                }
+
+                for (int i = coordinates.size() - 1; i > 0; i--) {
+                    coordinates.at(i).collapse_to_point(coordinates.at(i - 1), data_lines.at(0), i, i - 1);
+                }
+            }
 
 			if (event.type == sf::Event::MouseButtonPressed) {
 				mouse_state = Mouse_State::PRESSED;
@@ -179,20 +260,11 @@ int main() {
 
 		window.clear(sf::Color(255, 255, 255));
 
-
-        if (graph_type == 0) {
-            for (auto i: data_lines)
-                i.draw_bezier(bezier_axis_lines, &window);
-            for (auto i: bezier_axis_lines)
-                i.draw(&window);
+        for (auto i: coordinates) {
+            i.draw(&window);
         }
-        else{
-            for (auto i: axis_lines)
-                i.draw_line(&window);
-            for (auto i: data_lines)
-                i.draw_bezier(axis_lines, &window);
-        }
-
+        for (auto i: data_lines)
+            i.draw(coordinates, &window);
 
 		window.draw(y_max_text);
 		
@@ -204,53 +276,57 @@ int main() {
 }
 
 
-std::vector<sf::VertexArray> draw_scaled_graph(std::vector<std::vector<float>> data) {
+std::vector<std::vector<float>> cull_data_within_t(std::vector<std::vector<float>> *data){
 
-	// Sort the vector by the first element
-	std::sort(data.begin(), data.end(), [](const std::vector< float >& a, const std::vector< float >& b){ return a[0] > b[0]; } );
+    std::vector<float> a1 = data->at(0);
 
-	int red_index = data.size() / 2;
-	std::vector<float> red_index_y = data.at(red_index);
+    std::vector<std::vector<float>> result;
 
-	// Get the datas highest and lowest values to scale with
-	// Set the line to a random
-	sf::Vector2f bounds = get_largest_smallest_data_points(data);
+    result.push_back(a1);
 
-	// The x increment that we step by
-	int step = WINDOW_SIZE_X / data.at(0).size();
+    for (int y = 1; y < data->size(); y++){
 
-	std::vector<sf::VertexArray> vertex_array_array;
+        bool insert = true;
 
-	for (int x = 0; x < data.size(); x++) {
+        // size - 1 to cull the class point
+        for (int x = 0; x < a1.size() - 1; x++){
 
-		int x_pos = 0;
+            float little_t = fabs(a1.at(x) - data->at(y).at(x));
+            if (little_t >= 0.25)
+                insert = false;
+        }
 
-		sf::VertexArray v;
-		v.setPrimitiveType(sf::LinesStrip);
+        if (insert)
+            result.push_back(data->at(y));
+    }
 
-		for (int y = 0; y < data.at(x).size(); y++) {
-
-			float y_pos = (data.at(x).at(y) + (red_index_y.at(0) - red_index_y.at(y))) * ((WINDOW_SIZE_Y / bounds.y ) / 2) + WINDOW_SIZE_Y/4;
-			sf::Vertex v1(sf::Vector2f(x_pos, y_pos));
-
-			if (x == red_index)
-				v1.color = sf::Color(0, 0, 0);
-			else
-				v1.color = sf::Color(0, 255, 0);
-
-			v.append(v1);
-
-			x_pos += step;
-		}
-
-		vertex_array_array.push_back(v);
-	}
-
-	return vertex_array_array;
-
+    return result;
 }
 
+std::vector<std::vector<float>> non_culled_data(std::vector<std::vector<float>> *data){
 
+    std::vector<float> a1 = data->at(0);
+
+    std::vector<std::vector<float>> result;
+
+    for (int y = 1; y < data->size(); y++){
+
+        bool insert = false;
+
+        // size - 1 to cull the class point
+        for (int x = 0; x < a1.size() - 1; x++){
+
+            float little_t = fabs(a1.at(x) - data->at(y).at(x));
+            if (little_t >= 0.25)
+                insert = true;
+        }
+
+        if (insert)
+            result.push_back(data->at(y));
+    }
+
+    return result;
+}
 
 void normalize_data(std::vector<std::vector<float>> *data) {
 
@@ -304,70 +380,6 @@ sf::Vector2f get_largest_smallest_data_points_at_index(std::vector<std::vector<f
 	return sf::Vector2f(smallest, largest);
 }
 
-void draw_graph_background(int segment_count, sf::RenderWindow *window) {
-	
-	// The x increment that we step by
-	int step = WINDOW_SIZE_X / segment_count;
-
-	int pos = 0;
-
-	while (pos < WINDOW_SIZE_X) {
-		
-		sf::RectangleShape line(sf::Vector2f(2, WINDOW_SIZE_Y));
-		line.setPosition(sf::Vector2f(pos, 0));
-		line.setFillColor(sf::Color::Black);
-		window->draw(line);
-
-		pos += step;
-	}
-	
-}
-
-// This function takes the 2d array of data and returns multiple vertex arrays to draw
-std::vector<sf::VertexArray> draw_line_graph(std::vector<std::vector<float>> d) {
-	
-	// Get the datas highest and lowest values to scale with
-	sf::Vector2f bounds = get_largest_smallest_data_points(d);
-
-	// The x increment that we step by
-	int step = WINDOW_SIZE_X / d.at(0).size();
-
-	std::vector<sf::VertexArray> vertex_array_array;
-
-	for (int x = 0; x < d.size(); x++) {
-
-		int x_pos = 0;
-
-		sf::VertexArray v;
-		v.setPrimitiveType(sf::LinesStrip);
-		
-		// Set the line to a random color		
-		sf::Color color(rand() % 255, rand() % 255, rand() % 255);
-
-		for (int y = 0; y < d.at(x).size(); y++) {
-
-			sf::Vertex v1(sf::Vector2f(x_pos, WINDOW_SIZE_Y - d.at(x).at(y) * (WINDOW_SIZE_Y / bounds.y ) / 2 - WINDOW_SIZE_Y/4));
-			v1.color = color;
-
-			v.append(v1);
-
-			x_pos += step;
-		}
-
-		vertex_array_array.push_back(v);
-	}
-
-	return vertex_array_array;
-
-}
-
-
-
-// This function reads in a file line by line
-// Each line is tokenized by spaces, commas, or by quoted strings
-// The tokens are then converted to floats and added to an array
-// Once a line has been read and put into the vector, that vector is then added to another vector for storage
-// When done, the 2d vector is then returned
 
 std::vector<std::vector<float>> read_data(std::string file_path) {
 
