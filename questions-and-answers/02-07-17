@@ -3,9 +3,9 @@ Observations:
 
 1.) Lossy representations means that data cannot be reconstructed from the vis
 2.) Axis lines can be arrange in pretty much any way
-3.) Axis lines can be "linestripped" to create abstract shapes
+3.) Axis lines can be "line stripped" to create abstract shapes
 4.) Radial coords use n/2 points for all data sets where n%2==0
-5.) We recognize length more accuratly than length
+5.) We recognize length more accurately than length
 
 Questions:
 

@@ -1,0 +1,19 @@
+
+Observations:
+
+1.) Node link diagrams can represent both trees and networks
+2.) Node link has poor look up efficiency
+3.) Adjacency matrix has good look up efficiency
+4.) Eclosures can only be used with trees, like a quadtree
+5.) Hard to trace a path through the tree
+
+Question:
+
+1.) Can node links be labled efficiently?
+2.) How do you avoid labling occlusion with the adjacency matrix?
+3.) Lookup is easy, what about labling with enclosures?
+4.) What if child count was scrictly enforced with the enclosures?
+5.) 
+
+
+
