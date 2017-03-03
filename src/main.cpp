@@ -28,6 +28,7 @@ enum Mouse_State { PRESSED, DEPRESSED };
 
 int main() {
 
+
 	sf::RenderWindow window(sf::VideoMode(WINDOW_SIZE_X, WINDOW_SIZE_Y), "cs445");
 	sf::FloatRect viewport_rect(0, 0, 800, 800);
 	sf::View viewport(viewport_rect);
@@ -45,13 +46,15 @@ int main() {
 	
 	
 	// This is where the data is read, change the path for another file
-	std::vector<std::vector<float>> raw_data = read_data("../data/car_mpg.txt");
+	std::vector<std::vector<float>> raw_data = read_data("../data/glass.txt");
 
     normalize_data(&raw_data);
 
-    std::vector<std::vector<float>> culled_data = cull_data_within_t(&raw_data);
-    std::vector<std::vector<float>> culled_data_outside_t = non_culled_data(&raw_data);
 
+    std::vector<float> scalar(raw_data.at(0).size(), 1);
+    for (int i = 0; i < scalar.size(); i++){
+        scalar.at(i) = (rand() % 3) + 1;
+    }
 
     std::vector<DataLine> data_lines;
 
@@ -69,28 +72,14 @@ int main() {
 	// Initialize the paired coordinates
 	std::vector<ShiftedCoordinateGrid> coordinates;
 
-	int step = WINDOW_SIZE_X / culled_data.at(0).size();
-	for (int i = 0; i < culled_data.at(0).size() / 2; i++) {
-		//                       + a lil padding
-		int x_pos = step * i * 2 + step / 2;
-		coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 200), i));
-	}
+	int step = WINDOW_SIZE_X / raw_data.at(0).size();
 
     // Initialize the axis coordinates
     std::vector<AxisLine> axis_lines;
-    for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
-
-        int x_pos = step * i + step / 2;
-        axis_lines.push_back(AxisLine(sf::Vector2f(x_pos, 600), sf::Vector2f(x_pos, 200)));
-    }
 
     // Initialize the bezier coords
     std::vector<BezierAxisLine> bezier_axis_lines;
-    for (int i = 0; i < raw_data.at(0).size() - 1; i++) {
 
-        int x_pos = step * i + step / 2;
-        bezier_axis_lines.push_back(BezierAxisLine(sf::Vector2f(x_pos+step, 200), sf::Vector2f(x_pos, 200), i));
-    }
 
 
 	Mouse_State mouse_state = Mouse_State::DEPRESSED;
@@ -107,120 +96,9 @@ int main() {
 			if (event.type == sf::Event::Closed) {
 				window.close();
 			}
-			if (event.type == sf::Event::KeyPressed){
-				if (event.key.code == sf::Keyboard::Num1) {
+			if (event.type == sf::Event::KeyPressed) {
 
-                    coordinates.clear();
-
-                    int step = WINDOW_SIZE_X / culled_data.at(0).size();
-                    for (int i = 0; i < culled_data.at(0).size() / 2; i++) {
-                        //                       + a lil padding
-                        int x_pos = step * i * 2 + step / 2;
-                        coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos, 200), i));
-                    }
-
-                    data_lines.clear();
-                    // Initialize the container for the lines of data
-                    for (int line = 0; line < raw_data.size(); line++) {
-
-                        std::vector<float> raw_line_data = raw_data.at(line);
-
-                        int data_class = raw_line_data.back();
-                        raw_line_data.pop_back();
-
-                        data_lines.push_back(DataLine(raw_line_data, data_class));
-                    }
-                }
-
-                if (event.key.code == sf::Keyboard::Num2) {
-                    coordinates.clear();
-
-                    int step = WINDOW_SIZE_X / culled_data.at(0).size();
-                    for (int i = 0; i < culled_data.at(0).size() / 2; i++) {
-                        //                       + a lil padding
-                        int x_pos = step * i * 2 + step / 2;
-                        coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(100, 100), i));
-                    }
-				}
-				if (event.key.code == sf::Keyboard::Num3) {
-
-                    coordinates.clear();
-
-                    int step = WINDOW_SIZE_X / culled_data.at(0).size();
-                    for (int i = 0; i < culled_data.at(0).size() / 2; i++) {
-                        //                       + a lil padding
-                        int x_pos = step * i * 2 + step / 2;
-                        coordinates.push_back(ShiftedCoordinateGrid(sf::Vector2f(x_pos/6, x_pos/6), i));
-                    }
-
-                    for (int i = coordinates.size() - 1; i > 0; i--){
-                        coordinates.at(i).collapse_to_point(coordinates.at(i-1), data_lines.at(0), i, i-1);
-                    }
-				}
-                if (event.key.code == sf::Keyboard::Num4) {
-
-                    data_lines.clear();
-
-                    // Initialize the container for the lines of data
-                    for (int line = 0; line < culled_data.size(); line++) {
-
-                        std::vector<float> raw_line_data = culled_data.at(line);
-
-                        int data_class = raw_line_data.back();
-                        raw_line_data.pop_back();
-
-                        if (data_class == 1)
-                            data_lines.push_back(DataLine(raw_line_data, data_class));
-                    }
-
-                    // Initialize the container for the lines of data
-                    for (int line = 0; line < culled_data_outside_t.size(); line++) {
-
-                        std::vector<float> raw_line_data = culled_data_outside_t.at(line);
-
-                        int data_class = raw_line_data.back();
-                        raw_line_data.pop_back();
-
-                        if (data_class == 2)
-                            data_lines.push_back(DataLine(raw_line_data, data_class));
-                    }
-                }
-
-
-			}
-
-            if (event.key.code == sf::Keyboard::Num5) {
-                data_lines.clear();
-
-                // Initialize the container for the lines of data
-                for (int line = 0; line < culled_data.size(); line++) {
-
-                    std::vector<float> raw_line_data = culled_data.at(line);
-
-                    int data_class = raw_line_data.back();
-                    raw_line_data.pop_back();
-
-                    if (data_class == 1)
-                        data_lines.push_back(DataLine(raw_line_data, data_class));
-                }
-
-                // Initialize the container for the lines of data
-                for (int line = 0; line < culled_data_outside_t.size(); line++) {
-
-                    std::vector<float> raw_line_data = culled_data_outside_t.at(line);
-
-                    int data_class = raw_line_data.back();
-                    raw_line_data.pop_back();
-
-                    if (data_class == 2)
-                        data_lines.push_back(DataLine(raw_line_data, data_class));
-                }
-
-                for (int i = coordinates.size() - 1; i > 0; i--) {
-                    coordinates.at(i).collapse_to_point(coordinates.at(i - 1), data_lines.at(0), i, i - 1);
-                }
             }
-
 			if (event.type == sf::Event::MouseButtonPressed) {
 				mouse_state = Mouse_State::PRESSED;
 				
@@ -260,11 +138,13 @@ int main() {
 
 		window.clear(sf::Color(255, 255, 255));
 
-        for (auto i: coordinates) {
-            i.draw(&window);
-        }
+//        for (auto i: coordinates) {
+//            i.draw(&window);
+//        }
+
+
         for (auto i: data_lines)
-            i.draw(coordinates, &window);
+            i.draw_lab7(scalar, &window);
 
 		window.draw(y_max_text);
 		
@@ -273,59 +153,6 @@ int main() {
 	}
 
 	return 1;
-}
-
-
-std::vector<std::vector<float>> cull_data_within_t(std::vector<std::vector<float>> *data){
-
-    std::vector<float> a1 = data->at(0);
-
-    std::vector<std::vector<float>> result;
-
-    result.push_back(a1);
-
-    for (int y = 1; y < data->size(); y++){
-
-        bool insert = true;
-
-        // size - 1 to cull the class point
-        for (int x = 0; x < a1.size() - 1; x++){
-
-            float little_t = fabs(a1.at(x) - data->at(y).at(x));
-            if (little_t >= 0.25)
-                insert = false;
-        }
-
-        if (insert)
-            result.push_back(data->at(y));
-    }
-
-    return result;
-}
-
-std::vector<std::vector<float>> non_culled_data(std::vector<std::vector<float>> *data){
-
-    std::vector<float> a1 = data->at(0);
-
-    std::vector<std::vector<float>> result;
-
-    for (int y = 1; y < data->size(); y++){
-
-        bool insert = false;
-
-        // size - 1 to cull the class point
-        for (int x = 0; x < a1.size() - 1; x++){
-
-            float little_t = fabs(a1.at(x) - data->at(y).at(x));
-            if (little_t >= 0.25)
-                insert = true;
-        }
-
-        if (insert)
-            result.push_back(data->at(y));
-    }
-
-    return result;
 }
 
 void normalize_data(std::vector<std::vector<float>> *data) {

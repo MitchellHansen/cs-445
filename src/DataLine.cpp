@@ -274,3 +274,35 @@ std::vector<int> DataLine::reorder() {
 
     return idx;
 }
+
+void DataLine::draw_lab7(std::vector<float> scalar, sf::RenderWindow *window) {
+
+    std::vector<sf::Vector2f> vectors;
+
+    for (auto i: data){
+        vectors.emplace_back(sf::Vector2f(acos(abs(i)), i));
+    }
+
+    sf::VertexArray vertex_array;
+    vertex_array.setPrimitiveType(sf::LinesStrip);
+
+
+    sf::Vector2f position(200, 200);
+
+    for (int i = 0; i < vectors.size(); i++){
+
+        sf::Vector2f head(vectors.at(i).x * cos(vectors.at(i).y), vectors.at(i).x * sin(vectors.at(i).y));
+
+        head *= 20.0f * scalar.at(i);
+
+        vertex_array.append(sf::Vertex(position, color));
+
+        position += head;
+
+        vertex_array.append(sf::Vertex(position, color));
+
+    }
+
+    window->draw(vertex_array);
+
+}
